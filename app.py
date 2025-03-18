@@ -8,6 +8,7 @@ import tempfile
 from typing import List, Dict, Any
 import streamlit as st
 from dotenv import load_dotenv
+from src.utils.secrets import get_secret
 
 # Import custom modules
 from src.query_engine import QueryEngine
@@ -84,13 +85,8 @@ tab1, tab2 = st.tabs(["Document Upload & Indexing", "Query Documents"])
 with tab1:
     st.header("Document Upload")
     
-    # Set maximum number of documents - check Streamlit secrets first, then environment variables
-    try:
-        has_secrets = hasattr(st, "secrets")
-        max_documents = int(st.secrets["MAX_DOCUMENTS"]) if has_secrets and "MAX_DOCUMENTS" in st.secrets else int(os.environ.get("MAX_DOCUMENTS", "2"))
-    except Exception:
-        max_documents = int(os.environ.get("MAX_DOCUMENTS", "2"))
-    
+    # Set maximum number of documents - use secrets utility
+    max_documents = int(get_secret("MAX_DOCUMENTS", "2"))
     st.info(f"Maximum number of documents for this POC: {max_documents}")
     
     # File uploader
@@ -208,4 +204,8 @@ with tab2:
                     
                     if "reasoning" in item["response"]:
                         st.write("**Reasoning:**")
-                        st.write(item["response"].get("answer", "No answer generated"))
+                        st.write(item["response"]["reasoning"])
+
+# Footer
+st.markdown("---")
+st.caption("RAG Document Query System - Proof of Concept")

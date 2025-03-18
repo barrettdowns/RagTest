@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain.docstore.document import Document
 import streamlit as st
+from src.utils.secrets import get_secret
 
 # Load environment variables
 load_dotenv()
@@ -17,19 +18,10 @@ class EmbeddingEngine:
         """
         Initialize the embedding engine with Azure OpenAI configuration.
         """
-        try:
-            # Try to access Streamlit secrets
-            has_secrets = hasattr(st, "secrets")
-            azure_endpoint = st.secrets["AZURE_OPENAI_ENDPOINT"] if has_secrets and "AZURE_OPENAI_ENDPOINT" in st.secrets else os.environ.get("AZURE_OPENAI_ENDPOINT")
-            azure_deployment = st.secrets["AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME"] if has_secrets and "AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME" in st.secrets else os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME", "text-embedding-ada-002")
-            api_key = st.secrets["AZURE_OPENAI_API_KEY"] if has_secrets and "AZURE_OPENAI_API_KEY" in st.secrets else os.environ.get("AZURE_OPENAI_API_KEY")
-            api_version = st.secrets["AZURE_OPENAI_API_VERSION"] if has_secrets and "AZURE_OPENAI_API_VERSION" in st.secrets else os.environ.get("AZURE_OPENAI_API_VERSION", "2023-05-15")
-        except Exception:
-            # Fallback to environment variables
-            azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-            azure_deployment = os.environ.get("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME", "text-embedding-ada-002")
-            api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-            api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2023-05-15")
+        azure_endpoint = get_secret("AZURE_OPENAI_ENDPOINT")
+        azure_deployment = get_secret("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME", "text-embedding-ada-002")
+        api_key = get_secret("AZURE_OPENAI_API_KEY")
+        api_version = get_secret("AZURE_OPENAI_API_VERSION", "2023-05-15")
 
         self.embeddings = AzureOpenAIEmbeddings(
             azure_endpoint=azure_endpoint,

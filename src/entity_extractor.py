@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 import torch
 import streamlit as st
+from src.utils.secrets import get_secret
 
 # Conditional imports to make this module optional
 try:
@@ -35,12 +36,8 @@ class EntityExtractor:
             return
         
         try:
-            # Get Hugging Face token from Streamlit secrets or environment variables
-            try:
-                has_secrets = hasattr(st, "secrets")
-                hf_token = st.secrets["HUGGINGFACE_API_TOKEN"] if has_secrets and "HUGGINGFACE_API_TOKEN" in st.secrets else os.environ.get("HUGGINGFACE_API_TOKEN")
-            except Exception:
-                hf_token = os.environ.get("HUGGINGFACE_API_TOKEN")
+            # Get Hugging Face token from secrets utility
+            hf_token = get_secret("HUGGINGFACE_API_TOKEN")
             
             # Initialize the NER pipeline
             self.ner_pipeline = pipeline(

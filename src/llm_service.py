@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from openai import AzureOpenAI
 import streamlit as st
+from src.utils.secrets import get_secret
 
 # Load environment variables
 load_dotenv()
@@ -17,19 +18,10 @@ class LLMService:
         """
         Initialize the LLM service with Azure OpenAI configuration.
         """
-        try:
-            # Try to access Streamlit secrets
-            has_secrets = hasattr(st, "secrets")
-            api_key = st.secrets["AZURE_OPENAI_API_KEY"] if has_secrets and "AZURE_OPENAI_API_KEY" in st.secrets else os.environ.get("AZURE_OPENAI_API_KEY")
-            api_version = st.secrets["AZURE_OPENAI_API_VERSION"] if has_secrets and "AZURE_OPENAI_API_VERSION" in st.secrets else os.environ.get("AZURE_OPENAI_API_VERSION", "2023-05-15")
-            azure_endpoint = st.secrets["AZURE_OPENAI_ENDPOINT"] if has_secrets and "AZURE_OPENAI_ENDPOINT" in st.secrets else os.environ.get("AZURE_OPENAI_ENDPOINT")
-            deployment_name = st.secrets["AZURE_OPENAI_DEPLOYMENT_NAME"] if has_secrets and "AZURE_OPENAI_DEPLOYMENT_NAME" in st.secrets else os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
-        except Exception:
-            # Fallback to environment variables
-            api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-            api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2023-05-15")
-            azure_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-            deployment_name = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME")
+        api_key = get_secret("AZURE_OPENAI_API_KEY")
+        api_version = get_secret("AZURE_OPENAI_API_VERSION", "2023-05-15")
+        azure_endpoint = get_secret("AZURE_OPENAI_ENDPOINT")
+        deployment_name = get_secret("AZURE_OPENAI_DEPLOYMENT_NAME")
 
         # Initialize Azure OpenAI client
         self.client = AzureOpenAI(

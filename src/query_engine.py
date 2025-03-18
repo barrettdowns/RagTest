@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 import json
 import streamlit as st
+from src.utils.secrets import get_secret
 
 from .document_processor import DocumentProcessor
 from .embedding_engine import EmbeddingEngine
@@ -25,16 +26,9 @@ class QueryEngine:
         Args:
             use_entity_extraction: Whether to use entity extraction
         """
-        # Get chunk settings from Streamlit secrets or environment variables
-        try:
-            # Try to access Streamlit secrets - this will fail gracefully if no secrets file exists
-            has_secrets = hasattr(st, "secrets")
-            chunk_size = int(st.secrets["CHUNK_SIZE"]) if has_secrets and "CHUNK_SIZE" in st.secrets else int(os.environ.get("CHUNK_SIZE", "500"))
-            chunk_overlap = int(st.secrets["CHUNK_OVERLAP"]) if has_secrets and "CHUNK_OVERLAP" in st.secrets else int(os.environ.get("CHUNK_OVERLAP", "50"))
-        except Exception:
-            # If any error occurs, fall back to environment variables
-            chunk_size = int(os.environ.get("CHUNK_SIZE", "500"))
-            chunk_overlap = int(os.environ.get("CHUNK_OVERLAP", "50"))
+        # Get chunk settings from secrets utility
+        chunk_size = int(get_secret("CHUNK_SIZE", "500"))
+        chunk_overlap = int(get_secret("CHUNK_OVERLAP", "50"))
         
         self.document_processor = DocumentProcessor(
             chunk_size=chunk_size,
