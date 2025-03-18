@@ -40,10 +40,16 @@ class EntityExtractor:
             hf_token = get_secret("HUGGINGFACE_API_TOKEN")
             
             # Initialize the NER pipeline
+            # If we have a token, use it, otherwise don't pass the token parameter
+            if hf_token:
+                tokenizer = AutoTokenizer.from_pretrained(self.model_name, token=hf_token)
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+            
             self.ner_pipeline = pipeline(
                 "ner",
                 model=self.model_name,
-                tokenizer=AutoTokenizer.from_pretrained(self.model_name, token=hf_token),
+                tokenizer=tokenizer,
                 aggregation_strategy="simple"
             )
             print(f"Entity extractor initialized with model: {self.model_name}")
