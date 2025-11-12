@@ -20,6 +20,13 @@ class LLMService:
         """
         api_key = get_secret("OPENAI_API_KEY")
         model_name = get_secret("OPENAI_MODEL", "gpt-3.5-turbo")
+        
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is not set. Please set it in Streamlit secrets or environment variables.\n"
+                "For Streamlit Cloud: Go to Settings > Secrets and add:\n"
+                "OPENAI_API_KEY=your-api-key-here"
+            )
 
         # Initialize OpenAI client
         self.client = OpenAI(api_key=api_key)

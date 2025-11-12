@@ -24,6 +24,13 @@ class EmbeddingEngine:
         """
         api_key = get_secret("OPENAI_API_KEY")
         embedding_model = get_secret("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
+        
+        if not api_key:
+            raise ValueError(
+                "OPENAI_API_KEY is not set. Please set it in Streamlit secrets or environment variables.\n"
+                "For Streamlit Cloud: Go to Settings > Secrets and add:\n"
+                "OPENAI_API_KEY=your-api-key-here"
+            )
 
         self.embeddings = OpenAIEmbeddings(
             openai_api_key=api_key,

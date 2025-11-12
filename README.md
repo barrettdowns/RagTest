@@ -3,9 +3,9 @@ This repository contains a proof-of-concept implementation of a Retrieval-Augmen
 Features
 
 Document Processing: Ingest PDF or text documents and split them into appropriate chunks
-Vector Embeddings: Generate vector embeddings using Azure OpenAI
+Vector Embeddings: Generate vector embeddings using OpenAI
 Semantic Search: Store and retrieve document chunks using ChromaDB
-LLM-Based Reasoning: Answer complex questions spanning multiple documents using Azure OpenAI
+LLM-Based Reasoning: Answer complex questions spanning multiple documents using OpenAI
 Structured JSON Responses: Return well-formatted JSON with answers, reasoning, and optional entities
 Entity Extraction (Optional): Identify named entities using Hugging Face models
 Streamlit Interface: Simple UI for document upload, indexing, and querying
@@ -25,7 +25,7 @@ Copy      ┌─────────────┐          ┌────
            ▼                         │
     ┌────────────────┐              │
     │ Embeddings via │<-------------┘
-    │ Azure OpenAI   │
+    │ OpenAI         │
     └────────────────┘
            ▼
  ┌────────────────┐
@@ -47,8 +47,23 @@ Install dependencies:
 bashCopypip install -r requirements.txt
 
 Set up environment variables:
-bashCopycp .env.example .env
-Edit the .env file with your Azure OpenAI credentials.
+
+For local development, create a `.env` file:
+```bash
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo  # or gpt-4
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+```
+
+For Streamlit Cloud deployment:
+1. Go to your app settings in Streamlit Cloud
+2. Click on "Secrets" in the left sidebar
+3. Add the following secrets:
+```toml
+OPENAI_API_KEY = "your-openai-api-key-here"
+OPENAI_MODEL = "gpt-3.5-turbo"
+OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+```
 
 Usage
 
@@ -56,7 +71,7 @@ Start the Streamlit application:
 bashCopystreamlit run app.py
 
 Open your browser and navigate to http://localhost:8501
-Upload up to 2 documents (PDF or text)
+Upload up to 10 documents (PDF or text)
 Click "Index Documents" to process and store embeddings
 Navigate to the "Query Documents" tab
 Enter your question and click "Submit Query"
@@ -73,11 +88,11 @@ It has a simple Python API that's easy to integrate
 It offers good performance for small to medium document collections
 
 For a production system, alternatives like Pinecone, Weaviate, or Qdrant might be more suitable if scaling beyond a few documents.
-Azure OpenAI vs. Hugging Face
-The system primarily uses Azure OpenAI for two key reasons:
+OpenAI vs. Hugging Face
+The system primarily uses OpenAI for two key reasons:
 
-Performance: Azure OpenAI provides state-of-the-art models like GPT-4 with strong reasoning capabilities
-Integration: Many enterprise environments already have Azure infrastructure, making integration seamless
+Performance: OpenAI provides state-of-the-art models like GPT-4 with strong reasoning capabilities
+Ease of use: Simple API integration with excellent documentation and support
 
 Hugging Face is used as an optional component for entity extraction because:
 
@@ -93,7 +108,7 @@ The architecture supports potential extensions like caching or additional docume
 
 Limitations and Future Enhancements
 
-Document Limit: The POC is limited to 2 documents for simplicity
+Document Limit: The POC is limited to 10 documents for simplicity
 PDF Handling: Complex PDFs with tables, images, or unusual formatting may not be parsed optimally
 Entity Extraction: The current implementation is basic and could be enhanced with domain-specific models
 Caching: Implementing a response cache would improve performance for repeated queries
