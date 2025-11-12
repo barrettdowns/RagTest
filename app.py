@@ -85,9 +85,11 @@ tab1, tab2 = st.tabs(["Document Upload & Indexing", "Query Documents"])
 with tab1:
     st.header("Document Upload")
     
-    # Set maximum number of documents - use secrets utility
-    max_documents = int(get_secret("MAX_DOCUMENTS", "2"))
+    # Set maximum number of documents - HARDCODED TO 10
+    max_documents = 10
     st.info(f"Maximum number of documents for this POC: {max_documents}")
+    st.success("✅ Document limit updated to 10!")
+    st.warning(f"DEBUG: max_documents = {max_documents}")
     
     # File uploader
     uploaded_files = st.file_uploader(
@@ -125,7 +127,7 @@ with tab1:
                     file_path = tmp_file.name
                 
                 # Index the document
-                result = st.session_state.query_engine.index_document(file_path)
+                result = st.session_state.query_engine.index_document(file_path, file.name)
                 
                 # Clean up temporary file
                 os.unlink(file_path)

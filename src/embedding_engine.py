@@ -1,12 +1,16 @@
 """
 Embedding Engine Module
-- Generates embeddings for text chunks using Azure OpenAI
+- Generates embeddings for text chunks using OpenAI
 """
 import os
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from langchain_openai import AzureOpenAIEmbeddings
-from langchain.docstore.document import Document
+from langchain_openai import OpenAIEmbeddings
+try:
+    from langchain_core.documents import Document
+except ImportError:
+    # Fallback for older langchain versions
+    from langchain.docstore.document import Document
 import streamlit as st
 from src.utils.secrets import get_secret
 
@@ -16,18 +20,14 @@ load_dotenv()
 class EmbeddingEngine:
     def __init__(self):
         """
-        Initialize the embedding engine with Azure OpenAI configuration.
+        Initialize the embedding engine with OpenAI configuration.
         """
-        azure_endpoint = get_secret("AZURE_OPENAI_ENDPOINT")
-        azure_deployment = get_secret("AZURE_OPENAI_EMBEDDING_DEPLOYMENT_NAME", "text-embedding-ada-002")
-        api_key = get_secret("AZURE_OPENAI_API_KEY")
-        api_version = get_secret("AZURE_OPENAI_API_VERSION", "2023-05-15")
+        api_key = get_secret("OPENAI_API_KEY")
+        embedding_model = get_secret("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
-        self.embeddings = AzureOpenAIEmbeddings(
-            azure_endpoint=azure_endpoint,
-            azure_deployment=azure_deployment,
+        self.embeddings = OpenAIEmbeddings(
             openai_api_key=api_key,
-            openai_api_version=api_version,
+            model=embedding_model,
         )
     
     def embed_documents(self, documents: List[Document]) -> List[Dict[str, Any]]:

@@ -1,12 +1,12 @@
 """
 LLM Service Module
-- Interfaces with Azure OpenAI for generating responses
+- Interfaces with OpenAI for generating responses
 """
 import os
 import json
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-from openai import AzureOpenAI
+from openai import OpenAI
 import streamlit as st
 from src.utils.secrets import get_secret
 
@@ -16,25 +16,19 @@ load_dotenv()
 class LLMService:
     def __init__(self):
         """
-        Initialize the LLM service with Azure OpenAI configuration.
+        Initialize the LLM service with OpenAI configuration.
         """
-        api_key = get_secret("AZURE_OPENAI_API_KEY")
-        api_version = get_secret("AZURE_OPENAI_API_VERSION", "2023-05-15")
-        azure_endpoint = get_secret("AZURE_OPENAI_ENDPOINT")
-        deployment_name = get_secret("AZURE_OPENAI_DEPLOYMENT_NAME")
+        api_key = get_secret("OPENAI_API_KEY")
+        model_name = get_secret("OPENAI_MODEL", "gpt-3.5-turbo")
 
-        # Initialize Azure OpenAI client
-        self.client = AzureOpenAI(
-            api_key=api_key,
-            api_version=api_version,
-            azure_endpoint=azure_endpoint
-        )
+        # Initialize OpenAI client
+        self.client = OpenAI(api_key=api_key)
         
-        # Get deployment name from environment
-        self.deployment_name = deployment_name
+        # Get model name from environment
+        self.model_name = model_name
         
-        if not self.deployment_name:
-            raise ValueError("AZURE_OPENAI_DEPLOYMENT_NAME environment variable not set")
+        if not self.model_name:
+            raise ValueError("OPENAI_MODEL environment variable not set")
     
     def generate_response(
         self, 
@@ -62,9 +56,9 @@ class LLMService:
         # Build the user message with the query
         user_message = self._build_user_message(query)
         
-        # Call the Azure OpenAI API
+        # Call the OpenAI API
         response = self.client.chat.completions.create(
-            model=self.deployment_name,
+            model=self.model_name,
             messages=[
                 {"role": "system", "content": system_message},
                 {"role": "user", "content": user_message}

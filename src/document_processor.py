@@ -8,8 +8,19 @@ import re
 from typing import List, Dict, Union, Optional
 import pypdf
 import pdfplumber
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document
+try:
+    # Try newer langchain structure first
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    from langchain_core.documents import Document
+except ImportError:
+    try:
+        # Fallback to langchain-community
+        from langchain_community.text_splitter import RecursiveCharacterTextSplitter
+        from langchain_core.documents import Document
+    except ImportError:
+        # Fallback for older langchain versions
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from langchain.docstore.document import Document
 import streamlit as st
 
 class DocumentProcessor:
@@ -31,12 +42,13 @@ class DocumentProcessor:
             is_separator_regex=False,
         )
     
-    def process_file(self, file_path: str) -> List[Document]:
+    def process_file(self, file_path: str, original_filename: str = None) -> List[Document]:
         """
         Process a file and return a list of document chunks.
         
         Args:
             file_path: Path to the file to process
+            original_filename: Original filename to use in metadata (if different from file_path)
             
         Returns:
             List of Document objects containing text chunks with metadata
@@ -52,7 +64,7 @@ class DocumentProcessor:
             raise ValueError(f"Unsupported file type: {file_extension}")
         
         # Extract filename for metadata
-        filename = os.path.basename(file_path)
+        filename = original_filename if original_filename else os.path.basename(file_path)
         
         # Split the text into chunks
         return self._split_text(text, metadata={"source": filename})

@@ -3,8 +3,11 @@ streamlit>=1.24.0
 python-dotenv>=1.0.0
 openai>=1.1.0
 chromadb>=0.4.13
-langchain>=0.0.267
+langchain>=0.1.0
 langchain-openai>=0.0.2
+langchain-core>=0.1.0
+langchain-community>=0.0.20
+langchain-text-splitters>=0.0.1
 
 # Document processing
 pypdf>=3.15.1

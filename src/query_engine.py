@@ -57,19 +57,20 @@ class QueryEngine:
         else:
             self.entity_extractor = None
     
-    def index_document(self, file_path: str) -> Dict[str, Any]:
+    def index_document(self, file_path: str, original_filename: str = None) -> Dict[str, Any]:
         """
         Process and index a document.
         
         Args:
             file_path: Path to the document
+            original_filename: Original filename to use in metadata (if different from file_path)
             
         Returns:
             Dictionary with indexing statistics
         """
         try:
             # Process the document
-            documents = self.document_processor.process_file(file_path)
+            documents = self.document_processor.process_file(file_path, original_filename)
             
             # Generate embeddings
             embedded_documents = self.embedding_engine.embed_documents(documents)
