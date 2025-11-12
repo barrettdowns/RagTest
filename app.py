@@ -26,7 +26,13 @@ st.set_page_config(
 
 # Initialize session state
 if "query_engine" not in st.session_state:
-    st.session_state.query_engine = QueryEngine(use_entity_extraction=False)
+    try:
+        st.session_state.query_engine = QueryEngine(use_entity_extraction=False)
+        st.session_state.api_key_error = None
+    except ValueError as e:
+        # Store the error to display it in the UI
+        st.session_state.query_engine = None
+        st.session_state.api_key_error = str(e)
 
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = []
@@ -43,10 +49,42 @@ if not os.path.exists("data"):
 
 # Title and description
 st.title("RAG Document Query System")
+
+# Check for API key error
+if st.session_state.get("api_key_error"):
+    st.error("⚠️ Configuration Error")
+    st.markdown(f"""
+    **{st.session_state.api_key_error}**
+    
+    ### How to Fix:
+    
+    **For Streamlit Cloud:**
+    1. Go to your app's settings (click "Manage app" in the lower right)
+    2. Click on "Secrets" in the left sidebar
+    3. Add the following secrets:
+    ```toml
+    OPENAI_API_KEY = "your-openai-api-key-here"
+    OPENAI_MODEL = "gpt-3.5-turbo"
+    OPENAI_EMBEDDING_MODEL = "text-embedding-3-small"
+    ```
+    4. Click "Save" - the app will automatically redeploy
+    
+    **For Local Development:**
+    Create a `.env` file in the project root with:
+    ```
+    OPENAI_API_KEY=your-openai-api-key-here
+    OPENAI_MODEL=gpt-3.5-turbo
+    OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+    ```
+    
+    Get your API key from: https://platform.openai.com/api-keys
+    """)
+    st.stop()
+
 st.markdown("""
 This system demonstrates Retrieval-Augmented Generation (RAG) using:
 - Document processing and chunking
-- Vector embeddings with Azure OpenAI
+- Vector embeddings with OpenAI
 - ChromaDB for vector storage
 - LLM-based reasoning for answer generation
 """)
@@ -57,12 +95,18 @@ with st.sidebar:
     
     # Entity extraction toggle
     use_entity_extraction = st.toggle("Enable Entity Extraction", value=False)
-    if use_entity_extraction != getattr(st.session_state.query_engine, "use_entity_extraction", False):
-        st.session_state.query_engine = QueryEngine(use_entity_extraction=use_entity_extraction)
-        st.success("Updated entity extraction setting")
+    if st.session_state.query_engine and use_entity_extraction != getattr(st.session_state.query_engine, "use_entity_extraction", False):
+        try:
+            st.session_state.query_engine = QueryEngine(use_entity_extraction=use_entity_extraction)
+            st.success("Updated entity extraction setting")
+        except ValueError as e:
+            st.error(f"Error: {str(e)}")
+            st.session_state.query_engine = None
+            st.session_state.api_key_error = str(e)
+            st.rerun()
     
     # Reset button
-    if st.button("Reset Vector Store"):
+    if st.button("Reset Vector Store") and st.session_state.query_engine:
         result = st.session_state.query_engine.reset_index()
         if result["status"] == "success":
             st.session_state.indexed_files = []
@@ -111,7 +155,7 @@ with tab1:
             st.text(f"📄 {file.name} - {file.size} bytes")
         
         # Index button
-        if st.button("Index Documents"):
+        if st.button("Index Documents") and st.session_state.query_engine:
             progress_bar = st.progress(0)
             status_text = st.empty()
             
@@ -159,7 +203,7 @@ with tab2:
         query = st.text_input("Enter your query", key="query_input")
         
         # Submit button
-        if st.button("Submit Query") and query:
+        if st.button("Submit Query") and query and st.session_state.query_engine:
             # Process the query
             with st.spinner("Processing query..."):
                 response = st.session_state.query_engine.query(query)
